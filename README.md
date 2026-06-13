@@ -1,6 +1,6 @@
 # IPC Counter Application
 
-![C++](https://img.shields.io/badge/C%2B%2B-17-blue.svg)![CMake](https://img.shields.io/badge/CMake-3.16%2B-green.svg)![Linux](https://img.shields.io/badge/Platform-Linux-orange.svg)![POSIX](https://img.shields.io/badge/POSIX-IPC-red.svg)![License](https://img.shields.io/badge/License-Educational-lightgrey.svg)
+![C++](https://img.shields.io/badge/C%2B%2B-17-blue.svg) ![CMake](https://img.shields.io/badge/CMake-3.16%2B-green.svg) ![Linux](https://img.shields.io/badge/Platform-Linux-orange.svg) ![POSIX](https://img.shields.io/badge/POSIX-IPC-red.svg) ![License](https://img.shields.io/badge/License-Educational-lightgrey.svg)
 
 A simple C++17 application that demonstrates inter-process communication (IPC) between two processes using multiple IPC mechanisms:
 
