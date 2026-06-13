@@ -3,6 +3,7 @@
 
 #include <cstdint>
 #include <string>
+#include <cstring>
 #include <semaphore.h>
 #include <stdexcept>
 #include <fcntl.h>

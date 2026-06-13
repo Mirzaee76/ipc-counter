@@ -21,7 +21,7 @@ void SharedMemoryChannel::open(core::ProcessRole role)
 
 void SharedMemoryChannel::send(const counter::core::Message& message)
 {
-    shared_->value = message.value;
+    std::memcpy(shared_, &message, sizeof(message));
     if (role_ == core::ProcessRole::Initiator)
         sem_post(childSem_);
     else
@@ -36,7 +36,7 @@ counter::core::Message SharedMemoryChannel::receive()
         sem_wait(childSem_);
 
     counter::core::Message msg;
-    msg.value = shared_->value;
+    std::memcpy(&msg, shared_, sizeof(msg));
     return msg;
 }
 
@@ -78,8 +78,6 @@ void SharedMemoryChannel::createResources()
     shared_ = static_cast<counter::core::Message*>(mmap(nullptr, sizeof(counter::core::Message), PROT_READ | PROT_WRITE, MAP_SHARED, shmFd_, 0));
     if (shared_ == MAP_FAILED)
         throw std::runtime_error("mmap failed");
-
-    new (shared_) counter::core::Message();
 
     parentSem_ = sem_open(kParentSem.c_str(), O_CREAT, 0666, 0);
     childSem_  = sem_open(kChildSem.c_str(), O_CREAT, 0666, 0);
