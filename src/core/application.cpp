@@ -96,6 +96,9 @@ void Application::runReceiver()
         msg.value++;
         channel->send(msg);
         spdlog::info("Receiver : sent value={}", msg.value);
+
+        if (msg.value >= options_.maxValue)
+            break;
     }
 
     spdlog::info("Receiver finished");

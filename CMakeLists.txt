@@ -17,6 +17,7 @@ add_executable(counter_ipc
     src/ipc/ipc_factory.cpp
     src/ipc/pipe_channel.cpp
     src/ipc/unix_socket_channel.cpp
+    src/ipc/shm_channel.cpp
 )
 
 target_include_directories(

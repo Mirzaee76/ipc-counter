@@ -13,6 +13,8 @@ std::unique_ptr<IpcChannel> IpcFactory::create(core::IpcType type,
             return std::make_unique<PipeChannel>(parentToChild, childToParent);
         case core::IpcType::UnixSocket:
             return std::make_unique<UnixSocketChannel>();
+        case core::IpcType::SharedMemory:
+            return std::make_unique<SharedMemoryChannel>();
     }
 
     throw std::runtime_error("invalid ipc type");

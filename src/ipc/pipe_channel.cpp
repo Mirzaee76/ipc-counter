@@ -42,8 +42,6 @@ void PipeChannel::open(core::ProcessRole role)
             throw std::runtime_error("Unsupported process role");
         }
     }
-
-    isOpen_ = true;
 }
 
 void PipeChannel::send(const counter::core::Message& message)
@@ -70,8 +68,6 @@ counter::core::Message PipeChannel::receive()
 
 void PipeChannel::close()
 {
-    if (!isOpen_)
-        return;
 
     if (readFd_ >= 0)
     {
@@ -84,8 +80,6 @@ void PipeChannel::close()
         ::close(writeFd_);
         writeFd_ = -1;
     }
-
-    isOpen_ = false;
 }
 
 } // namespace counter::ipc
