@@ -6,6 +6,7 @@
 
 #include "ipc/ipc_channel.h"
 #include "ipc/pipe_channel.h"
+#include "ipc/unix_socket_channel.h"
 
 namespace counter::ipc
 {
