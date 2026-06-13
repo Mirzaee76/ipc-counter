@@ -13,6 +13,9 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 add_executable(counter_ipc
     src/main.cpp
     src/core/cli_parser.cpp
+    src/core/application.cpp
+    src/ipc/ipc_factory.cpp
+    src/ipc/pipe_channel.cpp
 )
 
 target_include_directories(

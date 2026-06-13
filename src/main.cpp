@@ -3,6 +3,7 @@
 
 #include "constants.h"
 #include "core/cli_parser.h"
+#include "core/application.h"
 
 int main(int argc, char** argv)
 {
@@ -12,13 +13,12 @@ int main(int argc, char** argv)
     try
     {
         auto options = counter::core::CliParser::parse(argc, argv);
-        spdlog::info("IPC Type = {}, Max Value = {}", static_cast<int>(options.ipc), options.maxValue);
+        counter::core::Application app(options);
+        return app.run();
     }
     catch (const std::exception& e)
     {
         spdlog::error("Fatal error in main: {}", e.what());
         return 1;
     }
-
-    return 0;
 }

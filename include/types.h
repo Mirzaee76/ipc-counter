@@ -1,6 +1,8 @@
 #ifndef TYPES_H
 #define TYPES_H
 
+#include <cstdint>
+
 namespace counter::core
 {
 
@@ -15,6 +17,11 @@ enum class ProcessRole
 {
     Initiator,
     Receiver
+};
+
+struct Message
+{
+    std::int32_t value = 0;
 };
 
 }
