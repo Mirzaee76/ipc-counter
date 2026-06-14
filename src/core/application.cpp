@@ -12,16 +12,7 @@ int Application::run()
 {
     spdlog::info("application started");
 
-    if (options_.ipc == IpcType::Pipe)
-    {
-        if (::pipe(parentToChild_.data()) < 0)
-            throw std::runtime_error("failed to create parentToChild pipe");
-
-        if (::pipe(childToParent_.data()) < 0)
-            throw std::runtime_error("failed to create childToParent pipe");
-
-        spdlog::info("pipes created");
-    }
+    createPipesIfNeeded();
 
     const auto pid = ::fork();
     if (pid < 0)
@@ -44,7 +35,12 @@ int Application::run()
     runInitiator();
 
     int status{};
-    ::waitpid(pid, &status, 0);
+    if (::waitpid(pid, &status, 0) < 0)
+        throw std::runtime_error("waitpid failed");
+    if (WIFEXITED(status))
+        spdlog::info("Parent process: child exited with code {}", WEXITSTATUS(status));
+    else if (WIFSIGNALED(status))
+        spdlog::error("Parent process: child terminated by signal {}", WTERMSIG(status));
 
     spdlog::info("application finished");
     return EXIT_SUCCESS;
@@ -53,7 +49,7 @@ int Application::run()
 void Application::runInitiator()
 {
     spdlog::info("Initiator started");
-    auto channel = ipc::IpcFactory::create(options_.ipc, parentToChild_, childToParent_);
+    auto channel = ipc::IpcFactory::create(options_.ipc, ipcContext_);
     channel->open(ProcessRole::Initiator);
 
     Message msg;
@@ -82,7 +78,7 @@ void Application::runInitiator()
 void Application::runReceiver()
 {
     spdlog::info("Receiver started");
-    auto channel = ipc::IpcFactory::create(options_.ipc, parentToChild_, childToParent_);
+    auto channel = ipc::IpcFactory::create(options_.ipc, ipcContext_);
     channel->open(ProcessRole::Receiver);
 
     while (true)
@@ -102,6 +98,20 @@ void Application::runReceiver()
     }
 
     spdlog::info("Receiver finished");
+}
+
+void Application::createPipesIfNeeded()
+{
+    if (options_.ipc != IpcType::Pipe)
+        return;
+
+    if (::pipe(ipcContext_.parentToChild.data()) < 0)
+        throw std::runtime_error("failed to create parentToChild pipe");
+
+    if (::pipe(ipcContext_.childToParent.data()) < 0)
+        throw std::runtime_error("failed to create childToParent pipe");
+
+    spdlog::info("pipes created");
 }
 
 } // namespace counter::core

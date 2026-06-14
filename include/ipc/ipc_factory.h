@@ -12,12 +12,16 @@
 namespace counter::ipc
 {
 
+struct Context
+{
+    std::array<int, 2> parentToChild{};
+    std::array<int, 2> childToParent{};
+};
+
 class IpcFactory
 {
 public:
-    static std::unique_ptr<IpcChannel> create(core::IpcType type,
-                                            const std::array<int,2>& parentToChild,
-                                            const std::array<int,2>& childToParent);
+    static std::unique_ptr<IpcChannel> create(core::IpcType type, const Context& context);
 };
 
 }

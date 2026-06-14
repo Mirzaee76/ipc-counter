@@ -26,12 +26,10 @@ public:
 private:
     void runInitiator();
     void runReceiver();
+    void createPipesIfNeeded();
 
     core::CliOptions options_;
-
-    // for pipes
-    std::array<int, 2> parentToChild_{};
-    std::array<int, 2> childToParent_{};
+    counter::ipc::Context ipcContext_;
 };
 
 }
