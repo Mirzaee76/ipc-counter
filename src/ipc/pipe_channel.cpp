@@ -8,13 +8,16 @@ PipeChannel::PipeChannel(const std::array<int,2>& parentToChild,const std::array
     childToParent_(childToParent)
 {}
 
-PipeChannel::~PipeChannel()
+PipeChannel::~PipeChannel() noexcept
 {
     close();
 }
 
 void PipeChannel::open(core::ProcessRole role)
 {
+    if (readFd_ >= 0 || writeFd_ >= 0)
+        throw std::runtime_error("PipeChannel already opened");
+
     switch (role)
     {
         case core::ProcessRole::Initiator:
@@ -46,6 +49,9 @@ void PipeChannel::open(core::ProcessRole role)
 
 void PipeChannel::send(const counter::core::Message& message)
 {
+    if (writeFd_ < 0)
+        throw std::runtime_error("pipe not opened");
+
     const auto bytesWritten = ::write(writeFd_, &message, sizeof(message));
 
     if (bytesWritten != sizeof(message))
@@ -54,6 +60,9 @@ void PipeChannel::send(const counter::core::Message& message)
 
 counter::core::Message PipeChannel::receive()
 {
+    if (readFd_ < 0)
+        throw std::runtime_error("pipe not opened");
+
     counter::core::Message message{};
     const auto bytesRead = ::read(readFd_, &message, sizeof(message));
 

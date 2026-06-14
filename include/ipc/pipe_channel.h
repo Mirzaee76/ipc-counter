@@ -16,7 +16,10 @@ class PipeChannel final : public IpcChannel
 {
 public:
     PipeChannel(const std::array<int,2>& parentToChild,const std::array<int,2>& childToParent);
-    ~PipeChannel() override;
+    ~PipeChannel() noexcept override;
+
+    PipeChannel(const PipeChannel&) = delete;
+    PipeChannel& operator=(const PipeChannel&) = delete;
 
     void open(core::ProcessRole role) override;
     void send(const counter::core::Message& message) override;
@@ -28,8 +31,6 @@ private:
     std::array<int,2> childToParent_{};
     int readFd_{-1};
     int writeFd_{-1};
-
-    bool isOpen_{false};
 };
 
 } // namespace counter::ipc
