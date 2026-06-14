@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.16)
 
 project(
-    counter_ipc
+    ipc_counter
     VERSION 0.0.0
     DESCRIPTION "IPC Counter Example"
     LANGUAGES CXX
@@ -10,7 +10,7 @@ project(
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
-add_executable(counter_ipc
+add_executable(ipc_counter
     src/main.cpp
     src/core/cli_parser.cpp
     src/core/application.cpp
@@ -21,14 +21,14 @@ add_executable(counter_ipc
 )
 
 target_include_directories(
-    counter_ipc
+    ipc_counter
     PRIVATE
         include
         third_party/spdlog/include
 )
 
 target_compile_options(
-    counter_ipc
+    ipc_counter
     PRIVATE
         -Wall
         -Wextra
@@ -37,9 +37,15 @@ target_compile_options(
         -Wshadow
 )
 
+target_link_libraries(
+    ipc_counter
+    PRIVATE
+        pthread
+)
+
 if(CMAKE_BUILD_TYPE STREQUAL "Debug")
     target_compile_options(
-        counter_ipc
+        ipc_counter
         PRIVATE
             -g
             -O0
