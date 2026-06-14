@@ -28,6 +28,175 @@ Both processes exchange a counter value and increment it alternately until a con
 
 ------
 
+# Build Requirements
+
+## Linux
+
+- C++17 compatible compiler
+- CMake 3.16+
+
+Tested with:
+
+- GCC
+
+------
+
+# Build Instructions
+
+Clone the repository:
+
+```bash
+git clone <repository-url>
+cd ipc-counter
+```
+
+Create a build directory:
+
+```bash
+mkdir build
+cd build
+```
+
+Configure the project:
+
+```bash
+cmake ..
+```
+
+Build:
+
+```bash
+cmake --build . -j
+```
+
+------
+
+# Usage
+
+```bash
+./counter_ipc [options]
+```
+
+------
+
+## Options
+
+| Option          | Description                |
+| --------------- | -------------------------- |
+| `--ipc pipe`    | Use Pipe IPC               |
+| `--ipc socket`  | Use UNIX Domain Socket IPC |
+| `--ipc shm`     | Use Shared Memory IPC      |
+| `--max-value N` | Set maximum counter value  |
+| `--help`        | Show help                  |
+| `--version`     | Show version               |
+
+------
+
+# Examples
+
+## Pipe
+
+```bash
+./counter_ipc --ipc pipe
+```
+
+------
+
+## UNIX Socket
+
+```bash
+./counter_ipc --ipc socket
+```
+
+------
+
+## Shared Memory
+
+```bash
+./counter_ipc --ipc shm
+```
+
+------
+
+## Custom Maximum Value
+
+```bash
+./counter_ipc --max-value 20 --ipc shm
+```
+
+------
+
+# Example Output
+
+```text
+[2026-06-13 18:45:28.823] [70529] [info] application started
+[2026-06-13 18:45:28.823] [70529] [info] Initiator started
+[2026-06-13 18:45:28.823] [70530] [info] Receiver started
+[2026-06-13 18:45:28.823] [70529] [info] Initiator: sent value=0
+[2026-06-13 18:45:28.823] [70530] [info] Receiver : recv value=0
+[2026-06-13 18:45:28.823] [70530] [info] Receiver : sent value=1
+[2026-06-13 18:45:28.823] [70529] [info] Initiator: recv value=1
+[2026-06-13 18:45:28.824] [70529] [info] Initiator: sent value=2
+[2026-06-13 18:45:28.824] [70530] [info] Receiver : recv value=2
+[2026-06-13 18:45:28.824] [70530] [info] Receiver : sent value=3
+[2026-06-13 18:45:28.824] [70529] [info] Initiator: recv value=3
+[2026-06-13 18:45:28.824] [70530] [info] Receiver finished
+[2026-06-13 18:45:28.824] [70529] [info] Initiator finished
+[2026-06-13 18:45:28.824] [70529] [info] application finished
+```
+
+------
+
+# Memory and File Descriptor Checks
+
+The project can be analyzed using Valgrind to detect memory leaks and file descriptor leaks.
+
+### Install Valgrind
+
+Ubuntu / Debian:
+
+```bash
+sudo apt update
+sudo apt install valgrind
+```
+
+### Run Memory Leak Check
+
+```bash
+valgrind \
+  --leak-check=full \
+  --show-leak-kinds=all \
+  ./ipc_counter --ipc pipe
+```
+
+### Run File Descriptor Leak Check
+
+```bash
+valgrind \
+  --track-fds=yes \
+  ./ipc_counter --ipc pipe
+```
+
+### Full Analysis
+
+```bash
+valgrind \
+  --leak-check=full \
+  --show-leak-kinds=all \
+  --track-fds=yes \
+  ./ipc_counter --ipc pipe
+```
+
+### Expected Result
+
+A successful run should report:
+
+```text
+All heap blocks were freed -- no leaks are possible
+FILE DESCRIPTORS: 3 open (3 std) at exit.
+ERROR SUMMARY: 0 errors from 0 contexts
+```
+
 # Project Structure
 
 ```text
@@ -172,125 +341,6 @@ This keeps the application independent of the underlying IPC mechanism.
 
 ------
 
-# Build Requirements
-
-## Linux
-
-- C++17 compatible compiler
-- CMake 3.16+
-
-Tested with:
-
-- GCC
-
-------
-
-# Build Instructions
-
-Clone the repository:
-
-```bash
-git clone <repository-url>
-cd ipc-counter
-```
-
-Create a build directory:
-
-```bash
-mkdir build
-cd build
-```
-
-Configure the project:
-
-```bash
-cmake ..
-```
-
-Build:
-
-```bash
-cmake --build . -j
-```
-
-------
-
-# Usage
-
-```bash
-./counter_ipc [options]
-```
-
-------
-
-## Options
-
-| Option          | Description                |
-| --------------- | -------------------------- |
-| `--ipc pipe`    | Use Pipe IPC               |
-| `--ipc socket`  | Use UNIX Domain Socket IPC |
-| `--ipc shm`     | Use Shared Memory IPC      |
-| `--max-value N` | Set maximum counter value  |
-| `--help`        | Show help                  |
-| `--version`     | Show version               |
-
-------
-
-# Examples
-
-## Pipe
-
-```bash
-./counter_ipc --ipc pipe
-```
-
-------
-
-## UNIX Socket
-
-```bash
-./counter_ipc --ipc socket
-```
-
-------
-
-## Shared Memory
-
-```bash
-./counter_ipc --ipc shm
-```
-
-------
-
-## Custom Maximum Value
-
-```bash
-./counter_ipc --max-value 20 --ipc shm
-```
-
-------
-
-# Example Output
-
-```text
-[2026-06-13 18:45:28.823] [70529] [info] application started
-[2026-06-13 18:45:28.823] [70529] [info] Initiator started
-[2026-06-13 18:45:28.823] [70530] [info] Receiver started
-[2026-06-13 18:45:28.823] [70529] [info] Initiator: sent value=0
-[2026-06-13 18:45:28.823] [70530] [info] Receiver : recv value=0
-[2026-06-13 18:45:28.823] [70530] [info] Receiver : sent value=1
-[2026-06-13 18:45:28.823] [70529] [info] Initiator: recv value=1
-[2026-06-13 18:45:28.824] [70529] [info] Initiator: sent value=2
-[2026-06-13 18:45:28.824] [70530] [info] Receiver : recv value=2
-[2026-06-13 18:45:28.824] [70530] [info] Receiver : sent value=3
-[2026-06-13 18:45:28.824] [70529] [info] Initiator: recv value=3
-[2026-06-13 18:45:28.824] [70530] [info] Receiver finished
-[2026-06-13 18:45:28.824] [70529] [info] Initiator finished
-[2026-06-13 18:45:28.824] [70529] [info] application finished
-```
-
-------
-
 # Extending the Project
 
 Adding a new IPC implementation requires:
@@ -321,15 +371,6 @@ case IpcType::MessageQueue:
 ```
 
 No changes are required in the application logic.
-
-------
-
-# Design Goals
-
-- Demonstrate multiple IPC mechanisms using a unified API.
-- Compare different IPC approaches with the same workflow.
-- Practice process management and synchronization in Linux.
-- Showcase extensible C++ system-programming architecture.
 
 ------
 
