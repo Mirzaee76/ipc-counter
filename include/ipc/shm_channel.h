@@ -11,6 +11,7 @@
 #include <unistd.h>
 
 #include "ipc/ipc_channel.h"
+#include "constants.h"
 
 namespace counter::ipc
 {
@@ -19,7 +20,10 @@ class SharedMemoryChannel final : public IpcChannel
 {
 public:
     SharedMemoryChannel();
-    ~SharedMemoryChannel() override;
+    ~SharedMemoryChannel() noexcept override;
+
+    SharedMemoryChannel(const SharedMemoryChannel&) = delete;
+    SharedMemoryChannel& operator=(const SharedMemoryChannel&) = delete;
 
     void open(core::ProcessRole role) override;
     void send(const counter::core::Message& message) override;

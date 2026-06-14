@@ -24,6 +24,8 @@ struct Message
     std::int32_t value = 0;
 };
 
+static_assert(std::is_trivially_copyable_v<Message>, "Message must be trivially copyable");
+
 }
 
 #endif // TYPES_H
