@@ -10,6 +10,7 @@
 #include <sys/un.h>
 
 #include "ipc/ipc_channel.h"
+#include "constants.h"
 
 namespace counter::ipc
 {
@@ -18,7 +19,10 @@ class UnixSocketChannel final : public IpcChannel
 {
 public:
     UnixSocketChannel();
-    ~UnixSocketChannel() override;
+    ~UnixSocketChannel() noexcept override;
+
+    UnixSocketChannel(const UnixSocketChannel&) = delete;
+    UnixSocketChannel& operator=(const UnixSocketChannel&) = delete;
 
     void open(core::ProcessRole role) override;
     void send(const counter::core::Message& message) override;
@@ -28,6 +32,9 @@ public:
 private:
     void setupServer();
     void setupClient();
+
+    void sendAll(int fd, const void* data, std::size_t size);
+    void recvAll(int fd, void* data, std::size_t size);
 
     int socketFd_{-1};
     int clientFd_{-1};

@@ -10,4 +10,7 @@ constexpr std::string_view LOG_FMT{
     "%v"
 };
 
+constexpr int kMaxRetries = 50;
+constexpr useconds_t kRetryDelayUs = 10000;
+
 #endif // CONSTANTS_H

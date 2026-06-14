@@ -5,7 +5,7 @@ namespace counter::ipc
 
 UnixSocketChannel::UnixSocketChannel() = default;
 
-UnixSocketChannel::~UnixSocketChannel()
+UnixSocketChannel::~UnixSocketChannel() noexcept
 {
     close();
 }
@@ -13,6 +13,9 @@ UnixSocketChannel::~UnixSocketChannel()
 void UnixSocketChannel::open(core::ProcessRole role)
 {
     role_ = role;
+
+    if (socketFd_ >= 0)
+        throw std::runtime_error("UnixSocketChannel already opened");
 
     if (role_ == core::ProcessRole::Initiator)
         setupClient();
@@ -53,11 +56,11 @@ void UnixSocketChannel::setupClient()
     addr.sun_family = AF_UNIX;
     std::strncpy(addr.sun_path, socketPath_.c_str(), sizeof(addr.sun_path) - 1);
 
-    for (int i = 0; i < 50; ++i)
+    for (int i = 0; i < kMaxRetries; ++i)
     {
         if (::connect(socketFd_, reinterpret_cast<sockaddr*>(&addr), sizeof(addr)) == 0)
             return;
-        ::usleep(10000); // 10 ms
+        ::usleep(kRetryDelayUs);
     }
 
     throw std::runtime_error("connect failed");
@@ -66,21 +69,20 @@ void UnixSocketChannel::setupClient()
 void UnixSocketChannel::send(const counter::core::Message& message)
 {
     int fd = (role_ == core::ProcessRole::Initiator) ? socketFd_ : clientFd_;
-    const auto bytesWritten = ::send(fd, &message, sizeof(message), 0);
+    if (fd < 0)
+        throw std::runtime_error("socket not opened");
 
-    if (bytesWritten != sizeof(message))
-        throw std::runtime_error("socket send failed");
+    sendAll(fd, &message, sizeof(message));
 }
 
 counter::core::Message UnixSocketChannel::receive()
 {
     int fd = (role_ == core::ProcessRole::Initiator) ? socketFd_ : clientFd_;
+    if (fd < 0)
+        throw std::runtime_error("socket not opened");
+
     counter::core::Message message{};
-    const auto bytesRead = ::recv(fd, &message, sizeof(message), 0);
-
-    if (bytesRead != sizeof(message))
-        throw std::runtime_error("socket receive failed");
-
+    recvAll(fd, &message, sizeof(message));
     return message;
 }
 
@@ -95,7 +97,50 @@ void UnixSocketChannel::close()
     clientFd_ = -1;
     socketFd_ = -1;
 
-    ::unlink(socketPath_.c_str());
+    if (role_ == core::ProcessRole::Receiver)
+        ::unlink(socketPath_.c_str());
+
+}
+
+void UnixSocketChannel::sendAll(int fd, const void* data, std::size_t size)
+{
+    const char* buffer = static_cast<const char*>(data);
+
+    std::size_t totalSent = 0;
+    while (totalSent < size)
+    {
+        const auto bytesSent = ::send(fd, buffer + totalSent, size - totalSent, 0);
+
+        if (bytesSent <= 0)
+            throw std::runtime_error("socket send failed");
+
+        totalSent += static_cast<std::size_t>(bytesSent);
+    }
+
+    if (totalSent != size)
+        throw std::runtime_error("socket send failed");
+}
+
+void UnixSocketChannel::recvAll(int fd, void* data, std::size_t size)
+{
+    char* buffer = static_cast<char*>(data);
+
+    std::size_t totalRead = 0;
+    while (totalRead < size)
+    {
+        const auto bytesRead = ::recv(fd, buffer + totalRead, size - totalRead, 0);
+
+        if (bytesRead == 0)
+            throw std::runtime_error("socket closed (EOF)");
+
+        if (bytesRead < 0)
+            throw std::runtime_error("socket receive failed");
+
+        totalRead += static_cast<std::size_t>(bytesRead);
+    }
+
+    if (totalRead != size)
+        throw std::runtime_error("socket receive failed");
 }
 
 } // namespace counter::ipc
