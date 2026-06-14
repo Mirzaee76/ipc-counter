@@ -27,7 +27,8 @@ CliOptions CliParser::parse(int argc, char** argv)
         if (arg == "--help")
         {
             print_help();
-            std::exit(0);
+            options.action = CliAction::ExitSuccess;
+            return options;
         }
 
         // version
@@ -39,11 +40,12 @@ CliOptions CliParser::parse(int argc, char** argv)
                 << APP_VER_PATCH
                 << std::endl;
 
-            std::exit(0);
+            options.action = CliAction::ExitSuccess;
+            return options;
         }
 
         // IPC type
-        if (arg == "--ipc")
+        else if (arg == "--ipc")
         {
             if (i + 1 >= argc)
                 throw std::runtime_error("missing value for --ipc");
@@ -67,7 +69,6 @@ CliOptions CliParser::parse(int argc, char** argv)
                 throw std::runtime_error("missing value for --max-value");
 
             std::string_view value = argv[++i];
-
             try
             {
                 options.maxValue = std::stoi(std::string(value));
@@ -76,6 +77,14 @@ CliOptions CliParser::parse(int argc, char** argv)
             {
                 throw std::runtime_error("invalid integer for --max-value");
             }
+
+            if (options.maxValue <= 0)
+                    throw std::runtime_error("--max-value must be greater than zero");
+        }
+
+        else
+        {
+            throw std::runtime_error(std::string("unknown argument: ") + std::string(arg));
         }
     }
 

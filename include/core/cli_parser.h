@@ -9,10 +9,17 @@
 namespace counter::core
 {
 
+enum class CliAction{
+    Continue,
+    ExitSuccess
+};
+
 struct CliOptions
 {
     IpcType ipc{IpcType::Pipe};
     int maxValue{10};
+
+    CliAction action{CliAction::Continue};
 };
 
 class CliParser
